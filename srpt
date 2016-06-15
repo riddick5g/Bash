@@ -1,0 +1,71 @@
+#!/bin/bash
+# Christopher Rogers
+# CS 3030
+# Lab2
+# Using find to search for something
+#\time -f %e command
+clear
+
+params="<path> <emailaddress>"
+
+if [ $# -ne 2 ]
+then
+	echo "Usage: `basename $0` $params"
+exit $E_WRONG_ARGS
+fi
+echo "SearchReport" $(hostname) $1 $(date)
+echo -ne "Execution time: "
+
+\time -f %e find "$1" \( -mtime +364 -fprint /tmp/cr32013.tim , \
+		 -size +500000c -fprint /tmp/cr32013.size , \
+		 -name *.o -fprint /tmp/cr32013.temp , \
+		 -type f -a -perm /111 -fprint /tmp/cr32013.ex , \
+		 -regex ".*\(bmp\|gif\|jpg\)$" -fprint /tmp/cr32013.pic , \
+ 		 -type l -fprint /tmp/cr32013.link , \
+ 		 -type f -fprint /tmp/cr32013.file , \
+		 -type d -fprint /tmp/cr32013.dir \) 
+  
+dir=$(cat /tmp/cr32013.dir | wc -l)
+tim=$(cat /tmp/cr32013.tim | wc -l)
+size=$(cat /tmp/cr32013.size | wc -l)
+temp=$(cat /tmp/cr32013.temp | wc -l)
+ex=$(cat /tmp/cr32013.ex | wc -l)
+pic=$(cat /tmp/cr32013.pic | wc -l)
+link=$(cat /tmp/cr32013.link | wc -l)
+file=$(cat /tmp/cr32013.file | wc -l)
+byte=$(cat /tmp/cr32013.file |xargs du -b 2>/dev/null|awk '{c+=$1}END{printf("%s",c)}')
+
+let dir-=1
+
+echo "Directories: `printf "%'d" $dir`
+Files: `printf "%'d" $file`
+Sym Links: `printf "%'d" $link`
+Old Files: `printf "%'d" $time`
+Large Files: `printf "%'d" $size`
+Graphics Files: `printf "%'d" $pic`
+Temporary Files: `printf "%'d" $temp`
+Executable Files: `printf "%'d" $ex`
+Total File Size: `printf "%'d" $byte`"
+
+
+echo "Search Report $(hostname) $1 $(date)
+Execution Time: $SECONDS
+Directories: `printf "%'d" $dir`
+Files: `printf "%'d" $file`
+Sym Links: `printf "%'d" $link`
+Old Files: `printf "%'d" $time`
+Large Files: `printf "%'d" $size`
+Graphics Files: `printf "%'d" $pic`
+Temporary Files: `printf "%'d" $temp`
+Executable Files: `printf "%'d" $ex`
+Total File Size: `printf "%'d" $byte` " > /tmp/cr32013Email.txt
+
+if [ $? -eq 0 ]; then
+   mail -s "Search Report" $2 < /tmp/cr32013Email.txt
+else 
+	echo "invalid email address"
+	exit 1
+fi
+
+rm /tmp/cr32013Email*
+exit 0
