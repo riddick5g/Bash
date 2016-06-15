@@ -1,0 +1,26 @@
+#!/bin/bash
+#Christopher Rogers
+#Lab 3
+
+header='<html>
+<body> 
+<h1> Failed Login Attempts Report as of'
+footer='</html>
+</body>'
+endhead='</h1>'
+
+echo $header >> /home/vmubuntu/Documents/flog.html
+date '+%A, %B, %d, %Y' >> /home/vmubuntu/Documents/flog.html
+echo $endhead >> /home/vmubuntu/Documents/flog.html
+
+awk '{ print $6 " " $7 " " $8 " " $9 " " $10 " " $11}' $1 \
+ | grep "Failed password for" | awk '{print $4}' \
+ | sort | uniq -c | sort -k1,1rn -k2.1 \
+ | sed 's/^/<br \/>/g' \
+ | sed 's/invalid/\&lt;UNKNOWN\&gt;/g' >> /home/vmubuntu/Documents/flog.html 
+
+echo $footer >> /home/vmubuntu/Documents/flog.html
+
+chmod 755 /home/vmubuntu/Documents/flog.html
+
+exit 0
